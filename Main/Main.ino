@@ -16,6 +16,9 @@
 #define RED_RGB_PIN 5
 #define GREEN_LED_PIN 8
 
+#define MINIMUM_MOISTURE 700
+#define MAXIMUM_MOISTURE 1023
+
 DHT dht(TEMPERATURE_SENSOR, DHTTYPE);
 
 void setup() {
@@ -35,6 +38,8 @@ void loop() {
   moistureDemo();
   temperatureDemo();
   motionPirDemo();
+
+  Serial.println("//=\\\\=//=\\\\=//=\\\\=//=\\\\=//=\\\\=//=\\\\");
   
   delay(250);
 }
@@ -50,18 +55,24 @@ void lightDemo()
 
 void moistureDemo()
 {
-  int readMoisture = map(analogRead(MOISURE_SENSOR), 0, 1023, -255, 255);
+  int readMoisture = analogRead(MOISURE_SENSOR);
 
   printMessage("read moisture: ", readMoisture);
   
-  if (readMoisture >= 0)
+  if (readMoisture >= MINIMUM_MOISTURE && readMoisture <= MAXIMUM_MOISTURE)
   {
-    analogWrite(BLUE_RGB_PIN, readMoisture);
+    analogWrite(BLUE_RGB_PIN, readMoisture - MINIMUM_MOISTURE);
     analogWrite(RED_RGB_PIN, OFF);
+  }
+  else if (readMoisture > MAXIMUM_MOISTURE)
+  {
+    int writeRedPin = map(readMoisture, readMoisture - MAXIMUM_MOISTURE, 1023, 0, 255);
+    analogWrite(RED_RGB_PIN, ON);
+    analogWrite(BLUE_RGB_PIN, OFF);
   }
   else
   {
-    int writeRedPin = map(readMoisture, -255, -1, 255, 0);
+    int writeRedPin = map(readMoisture, 0, MINIMUM_MOISTURE, 255, 0);
     analogWrite(RED_RGB_PIN, writeRedPin);
     analogWrite(BLUE_RGB_PIN, OFF);
   }
