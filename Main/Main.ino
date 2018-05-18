@@ -1,104 +1,84 @@
-#include "DHT.h"
-#include <Adafruit_Sensor.h>
+#include <SFEMP3ShieldConfig.h>
+#include <SFEMP3Shield.h>
+#include <SFEMP3Shieldmainpage.h>
 
-#define OFF 0
-#define ON 255
 
-#define LIGHT_SENSOR 5
-#define MOISURE_SENSOR 4
-#define TEMPERATURE_SENSOR 13
-#define MOTION_PIR_SENSOR 12
 
-#define DHTTYPE DHT22
+#include <SPI.h>
+#include <SdFat.h>
+#include <SdFatUtil.h>
+#include <SFEMP3Shield.h>
+#include "LedControl.h"
 
-#define WHITE_LED_PIN 9
-#define BLUE_RGB_PIN 6
-#define RED_RGB_PIN 5
-#define GREEN_LED_PIN 8
+//LCD pins
+#define DIN 42
+#define CS 44
+#define CLK 46
 
-#define MINIMUM_MOISTURE 700
-#define MAXIMUM_MOISTURE 1023
+#define MOTION_PIR_SENSOR 36
 
-DHT dht(TEMPERATURE_SENSOR, DHTTYPE);
+#define NUMBER_OF_TRACKS 9
+
+SdFat sd;
+SFEMP3Shield MP3player;
+
+LedControl lc = LedControl(DIN,CLK,CS,0);
 
 void setup() {
-  Serial.begin(9600);
-  
-  pinMode(WHITE_LED_PIN, OUTPUT);
-  pinMode(BLUE_RGB_PIN, OUTPUT);
-  pinMode(RED_RGB_PIN, OUTPUT);
-  pinMode(GREEN_LED_PIN, OUTPUT);
+  if (!sd.begin(SD_SEL, SPI_HALF_SPEED)) 
+  {
+    sd.initErrorHalt(); 
+  }
 
-  pinMode(TEMPERATURE_SENSOR, INPUT);
-  pinMode(MOTION_PIR_SENSOR, INPUT);
+  MP3player.begin();
+  MP3player.setBitRate(192);
+  MP3player.setVolume(22,22); 
+  
+  //lcdSetup();
+
+  //byte smile[8] = {0x00,0x66,0x66,0x00,0x00,0x42,0x3C,0x00};
+  //printByte(smile);
 }
+
+
+void lcdSetup()
+{
+  lc.shutdown(0,false);       //The MAX72XX is in power-saving mode on startup
+  lc.setIntensity(0,15);      // Set the brightness to maximum value
+  lc.clearDisplay(0);         // and clear the display
+}
+
 
 void loop() {
-  lightDemo();
-  moistureDemo();
-  temperatureDemo();
-  motionPirDemo();
-
-  Serial.println("//=\\\\=//=\\\\=//=\\\\=//=\\\\=//=\\\\=//=\\\\");
-  
-  delay(250);
+  motionPirCheck();
+  delay(500);
 }
 
-void lightDemo()
-{
-  int lightOutput = map(analogRead(LIGHT_SENSOR), 0, 1023, 255, 0);
-
-  printMessage("lightOutput: ", lightOutput);
-
-  analogWrite(WHITE_LED_PIN, lightOutput);
-}
-
-void moistureDemo()
-{
-  int readMoisture = analogRead(MOISURE_SENSOR);
-
-  printMessage("read moisture: ", readMoisture);
-  
-  if (readMoisture >= MINIMUM_MOISTURE && readMoisture <= MAXIMUM_MOISTURE)
-  {
-    analogWrite(BLUE_RGB_PIN, readMoisture - MINIMUM_MOISTURE);
-    analogWrite(RED_RGB_PIN, OFF);
-  }
-  else if (readMoisture > MAXIMUM_MOISTURE)
-  {
-    int writeRedPin = map(readMoisture, readMoisture - MAXIMUM_MOISTURE, 1023, 0, 255);
-    analogWrite(RED_RGB_PIN, ON);
-    analogWrite(BLUE_RGB_PIN, OFF);
-  }
-  else
-  {
-    int writeRedPin = map(readMoisture, 0, MINIMUM_MOISTURE, 255, 0);
-    analogWrite(RED_RGB_PIN, writeRedPin);
-    analogWrite(BLUE_RGB_PIN, OFF);
-  }
-}
-
-void temperatureDemo()
-{
-  printMessage("temperature: ", dht.readTemperature());
-}
-
-void motionPirDemo()
+void motionPirCheck()
 {
   if (digitalRead(MOTION_PIR_SENSOR) == 1)
   {
-    digitalWrite(GREEN_LED_PIN, HIGH);
-    Serial.println("motion detected!");
-  }
-  else
-  {
-    digitalWrite(GREEN_LED_PIN, LOW);
+    MP3player.playTrack(random(1, NUMBER_OF_TRACKS + 1));
+    delay(50);
+    
+    while (MP3player.isPlaying() == 1)
+    {
+      delay(50);
+    }
+
+    delay(5000);
   }
 }
 
-void printMessage(String message, int value)
+
+void printByte(byte character [])
 {
-  Serial.print(message);
-  Serial.println(value);
+  int i = 0;
+  for(i=0;i<8;i++)
+  {
+    lc.setRow(0,i,character[i]);
+  }
+  
 }
+
 
