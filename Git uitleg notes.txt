@@ -1,0 +1,79 @@
+GIT uitleg
+
+Git is een systeem voor versiebeheer wat veranderingen bijhoud.
+
+Het basic systeem bestaat uit een repository met gebruikers.
+De de repository is op te splitsen in een lokale en een remote repository
+- De lokale repository bevind zich op je laptop en houd wijzigingen die jij aanbrengt en commit bij 
+(over het commit deel later meer)
+- De remote repository bevind zich op een centraal benaderbare locatie waar iedere gebruiker op zit
+
+Om te beginnen zal je de applicatie "Git" moeten installeren om van git gebruik te maken.
+
+De gemakkelijkste manier om een repository aan te maken is door op Github een nieuwe repository aan te maken
+ en deze vervolgens op de lokale computer te krijgen via het "git clone <url>" commando.
+
+Stel we hebben nu een bestand hierin gezet genaamd demofile.doc en we willen dit op git zetten zodat iedereen het kan gebruiken.
+
+Dit doen we door de veranderingen met een "git commit" vast te leggen.
+Alleen hiervoor moet het bestand wel gemarkeerd worden zodat deze in de git wordt meegenomen.
+we kunnen de status controleren door "git status", dit laat zien welke bestanden worden meegenomen als we een commit bericht versturen
+
+Voeg een bestand toe aan een commit met "git add <filename>" of alle bestanden met veranderingen met "git add ."
+Om een commit bericht te versturen gebruiken we "git commit -m<"message">" 
+NOTE: de -m "Message" is een MUST bij ieder bericht
+
+Hiermee zijn de veranderingen naar je lokale repository gestuurd.
+Om te zorgen dat andere mensen eraan kunnen komen moeten deze op de remote repostiory komen.
+Dit doen we door middel van het "git push" commando wat de veranderingen naar de remote repository stuurt
+
+Alleen nu staat onze demofile.doc nogsteeds niet op andermans computer.
+Het staat nu op de remote repository en op onze lokale repository maar niet op de lokale repository van de andere gebruiker.
+Om de veranderingen op de remote repository binnen te halen op de lokale repository gebruiken we "git pull"
+
+Dit is een basic git repository waarbij alleen gebruik wordt gemaakt van een master branch
+Hierbij zal regelmatig het volgende probleem optreden, 2 personen die op hetzelfde moment veranderingen hebben commit zonder te pullen.
+Dit kan een merge conflict veroorzaken, hierbij zijn veranderingen op dezelfde locatie binnen een bestand gemaakt en git weet niet welke verandering het moet kiezen
+Vaak kan dit met een automatische tool grotendeels het werk verminderen maar de situatie zal regelmatig voor komen.
+
+Merge conflicten zijn un-avoidable maar moeten de workflow niet stil leggen
+om het probleem te verminderen worden branches aangemaakt waarop mensen kunnen doorwerken ongeacht de veranderingen die andere op andere branches maken.
+person-based branches zijn geen best-practise hierbij omdat mensen anders kunnen denken over hetzelfde werk en later bij het samenvoegen van veranderingen hier alleen maar meer merge-conflicten veroorzaakt worden
+feature-based branches zijn over het algemeen geaccepteerd als best-practise omdat hierbij mensen alleen maar werken aan een specifiek feature binnen een branch.
+
+De gemakkelijkste manier om branches aan te maken is via github door middel van het interface.
+lokaal zijn er ook enkele handige commando's om informatie over branches te zien:
+"git branch" laat een lijst van branches zien + de branch waar de gebruiker zich op dat moment in bevind in het groen
+"git fetch" update de lijst van branches als deze remote anders zijn
+"git checkout <branch>" om van branch te wisselen, als er nog geen lokale variant van de remote brach bestaat wordt deze aangemaakt
+"git merge <other branch>" om de veranderingen van branches samen te voegen worden deze gemerged in de momentele branch
+
+Dit maakt onze git omgeving al meer advanced en beheerbaar.
+Om het nog dynamischer te maken kan ervoor worden besloten ook nog verschillende repositories te gebruiken
+ of een heel andere git server die door een bedrijf/particulier zelf is opgezet.
+
+
+
+Samevatting commands:
+standard:
+git clone <url>, krijg de repository lokaal
+git pull, krijg changes
+git add, track veranderingen
+git commit -m"changes", commit veranderingen met als bericht "changes"
+git push, verstuur verandereingen naar remote repository
+git status, verkrijg status van momentele situatie
+
+branches:
+git branch, welke branches zijn er?
+git checkout <branch>, wissen van branch
+git fetch, is er nieuwe branch informatie?
+git merge <other branch>, merged veranderingen tussen verschillende branches in de lokale branch
+
+
+
+Algemene richtlijnen (voorkomt groot schalige conflicten):
+1. pull changes
+2. maak veranderingen
+3. commit changes
+4. pull changes
+5. push changes
